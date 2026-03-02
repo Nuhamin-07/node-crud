@@ -12,11 +12,22 @@ await db.exec(`
   );
 `);
 
+await db.query(
+  "INSERT INTO contacts(name, email, phone_number) VALUES ($1,$2,$3)",
+  ["Nuhamin", "nuhamin@getMaxListeners.com", "0911202020"],
+);
+
+const result = await db.query("SELECT * FROM contacts");
+
+console.table(result.rows);
+
 const server = http.createServer(async (req, res) => {
   res.setHeader("Content-Type", "application/json");
 
   if (req.method === "GET" && req.url === "/contacts") {
     const result = await db.query("SELECT * FROM contacts");
+
+    console.log(result.rows);
 
     res.statusCode(200);
     res.end(JSON.stringify(result.rows));
@@ -46,7 +57,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   res.statusCode(404);
-  res.end(JSON.stringify({ message: "Route not found" }));
+  res.end(JSON.stringify({ message: "Page not found" }));
 });
 
 server.listen(PORT, () => {
