@@ -14,11 +14,6 @@ await db.exec(`
   );
 `);
 
-// await db.query(
-//   "INSERT INTO contacts(name, email, phone_number) VALUES ($1,$2,$3)",
-//   ["Nuhamin", "nuhamin@getMaxListeners.com", "0911202020"],
-// );
-
 const __dirname = import.meta.dirname;
 const pathname = path.join(__dirname, "public", "index.html");
 console.log(__dirname);
@@ -43,20 +38,16 @@ const server = http.createServer(async (req, res) => {
         try {
           const data = JSON.parse(body);
 
-          // Insert new contact
           await db.query(
             "INSERT INTO contacts(name, email, phone_number) VALUES ($1,$2,$3)",
             [data.name, data.email, data.phone_number],
           );
 
-          // Fetch all contacts AFTER insertion
           const result = await db.query("SELECT * FROM contacts");
 
-          // Log inserted data
           console.log("Contact inserted successfully!");
           console.table(result.rows);
 
-          // Respond to frontend
           res.writeHead(201, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "Contact added successfully" }));
         } catch (err) {
@@ -66,7 +57,61 @@ const server = http.createServer(async (req, res) => {
         }
       });
 
-      return; // important so it doesn’t continue to static file serving
+      return;
+    }
+
+    if (req.url === "/contacts" && req.method === "GET") {
+      try {
+        const result = await db.query("SELECT * FROM contacts");
+
+        console.log("Fetched contacts:");
+        console.table(result.rows);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(result.rows));
+      } catch (err) {
+        console.error("Error fetching contacts:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Server error" }));
+      }
+
+      return;
+    }
+
+    if (req.url.startsWith("/contacts/") && req.method === "DELETE") {
+      const id = req.url.split("/")[2];
+      try {
+        await db.query("DELETE FROM contacts WHERE id = $1", [id]);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Contact deleted" }));
+      } catch (err) {
+        console.error(err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Server error" }));
+      }
+      return;
+    }
+
+    if (req.url.startsWith("/contacts/") && req.method === "PUT") {
+      const id = req.url.split("/")[2];
+      let body = "";
+      req.on("data", (chunk) => (body += chunk.toString()));
+      req.on("end", async () => {
+        try {
+          const data = JSON.parse(body);
+          await db.query(
+            "UPDATE contacts SET name=$1, email=$2, phone_number=$3 WHERE id=$4",
+            [data.name, data.email, data.phone_number, id],
+          );
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Contact updated" }));
+        } catch (err) {
+          console.error(err);
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Server error" }));
+        }
+      });
+      return;
     }
 
     const ext = path.extname(filePath);
