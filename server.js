@@ -5,19 +5,8 @@ import db from "./db.js";
 
 const PORT = 8000;
 
-await db.exec(`
-  CREATE TABLE IF NOT EXISTS contacts (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    phone_number TEXT
-  );
-`);
-
 const __dirname = import.meta.dirname;
 const pathname = path.join(__dirname, "public", "index.html");
-console.log(__dirname);
-console.log("pathname ", path.extname(pathname));
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -43,10 +32,9 @@ const server = http.createServer(async (req, res) => {
             [data.name, data.email, data.phone_number],
           );
 
-          const result = await db.query("SELECT * FROM contacts");
-
-          console.log("Contact inserted successfully!");
-          console.table(result.rows);
+          const result = await db.query(
+            "SELECT * FROM contacts ORDER BY id ASC;",
+          );
 
           res.writeHead(201, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "Contact added successfully" }));
@@ -63,9 +51,6 @@ const server = http.createServer(async (req, res) => {
     if (req.url === "/contacts" && req.method === "GET") {
       try {
         const result = await db.query("SELECT * FROM contacts");
-
-        console.log("Fetched contacts:");
-        console.table(result.rows);
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(result.rows));
