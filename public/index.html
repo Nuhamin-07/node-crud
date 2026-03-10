@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacts</title>
+    <link href="./index.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div>
+      <button id="addContact">New Contact</button>
+    </div>
+    <form id="contactForm" style="display: none">
+      <input type="text" id="name" name="name" placeholder="Name" required />
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Email"
+        required
+      />
+      <input
+        type="text"
+        id="phone"
+        name="phone"
+        placeholder="Phone Number"
+        required
+      />
+
+      <button type="submit" id="saveContact">Save Contact</button>
+    </form>
+    <script src="./index.js"></script>
+  </body>
+</html>
